@@ -34,7 +34,6 @@ def client_side_lis(client_socket):
 
 	client_socket.send('HTTP/1.0 200 Connection established\r\n\r\n'.encode())
 	
-	
 	cert_path = os.path.join(os.getcwd(),'cert', host + '.pem')
 
 	print(cert_path)

@@ -44,7 +44,8 @@ def client_side_lis(client_socket):
 		ssl_client = ssl.wrap_socket(client_socket, keyfile = cert_path, certfile = cert_path, server_side = True)
 		ssl_send = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	except:
-		pass
+		client_socket.close()
+		return
 
 	try:
 		ssl_send.connect((host, 443))

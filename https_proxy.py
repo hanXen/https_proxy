@@ -6,7 +6,7 @@ import threading
 import os
 import ssl
 
-list_lock = threading.Lock()
+thread_lock = threading.Lock()
 clients_list = []
 
 """def server_side_lis(ssl_client, ssl_send):
@@ -38,7 +38,9 @@ def client_side_lis(client_socket):
 
 	print(cert_path)
 	if not os.path.isfile(cert_path):
+		thread_lock.acquire()
 		os.system('cd cert && sh _make_site.sh ' + host)
+		thread_lock.release()
 
 	try:
 		ssl_client = ssl.wrap_socket(client_socket, keyfile = cert_path, certfile = cert_path, server_side = True)
@@ -59,6 +61,10 @@ def client_side_lis(client_socket):
 		#th.start()
 		while True:
 			try:
+				request = ssl_send.recv(65536)
+				if not request:
+					break
+				ssl_client.send(request)
 				response = ssl_send.recv(65536)
 				print(response)
 				if not response:
@@ -82,18 +88,18 @@ def start_proxy(server_socket):
 	try:
 		while True:
 			(client_socket,addr) = server_socket.accept()
-			list_lock.acquire()
+			thread_lock.acquire()
 			clients_list.append(client_socket)
-			list_lock.release()
+			thread_lock.release()
 			t = threading.Thread(target = client_side_lis, args = (client_socket,))
 			t.daemon = True
 			t.start()
 	except KeyboardInterrupt:
 		print("\n--- Server Closed ---")
-		list_lock.acquire()
+		thread_lock.acquire()
 		for client in clients_list:
 			client.close()
-		list_lock.release()
+		thread_lock.release()
 		server_socket.close()
 		sys.exit(1)
 
